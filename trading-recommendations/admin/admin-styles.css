@@ -1,0 +1,4 @@
+/* Basic styles for admin modal and button */
+#tr-close-modal { background: #fff; border: 1px solid #ccc; padding: 10px; max-width:400px; }
+#tr-close-modal h4 { margin-top:0; }
+#tr-mark-closed { margin-top:10px; }
