@@ -1,6 +1,6 @@
 :root {
-    --tr-primary: #f4f4f4;
-    --tr-secondary: #ffffff;
+    --tr-primary: #230fa4;
+    --tr-secondary: #4a62b8;
     --tr-accent: #2563eb;
     --tr-success: #16a34a;
     --tr-danger: #dc2626;
@@ -8,6 +8,77 @@
     --tr-card-bg: #ffffff;
     --tr-border: #e2e8f0;
     --tr-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* RTL Support for Arabic */
+html[dir="rtl"] .tr-active-grid,
+html[dir="rtl"] .trades-table-wrapper,
+html[dir="rtl"] .tr-active-card,
+html[dir="rtl"] .tr-categories-dropdown {
+    direction: rtl;
+    text-align: right;
+}
+
+html[dir="rtl"] .tr-card-top,
+html[dir="rtl"] .tr-card-header,
+html[dir="rtl"] .tr-row,
+html[dir="rtl"] .tr-entry {
+    flex-direction: row-reverse;
+}
+
+html[dir="rtl"] .trades-table {
+    direction: rtl;
+}
+
+html[dir="rtl"] .trades-table thead th {
+    text-align: right;
+}
+
+html[dir="rtl"] .trades-table tbody td {
+    text-align: right;
+}
+
+/* Auto-detect Arabic language and apply RTL */
+body[lang="ar"],
+body[lang*="ar"],
+html[lang="ar"],
+html[lang*="ar"] {
+    direction: rtl;
+}
+
+body[lang="ar"] .tr-active-grid,
+body[lang="ar"] .trades-table-wrapper,
+body[lang="ar"] .tr-active-card,
+body[lang="ar"] .tr-categories-dropdown,
+html[lang="ar"] .tr-active-grid,
+html[lang="ar"] .trades-table-wrapper,
+html[lang="ar"] .tr-active-card,
+html[lang="ar"] .tr-categories-dropdown {
+    direction: rtl;
+    text-align: right;
+}
+
+body[lang="ar"] .tr-card-top,
+body[lang="ar"] .tr-card-header,
+body[lang="ar"] .tr-row,
+body[lang="ar"] .tr-entry,
+html[lang="ar"] .tr-card-top,
+html[lang="ar"] .tr-card-header,
+html[lang="ar"] .tr-row,
+html[lang="ar"] .tr-entry {
+    flex-direction: row-reverse;
+}
+
+body[lang="ar"] .trades-table,
+html[lang="ar"] .trades-table {
+    direction: rtl;
+}
+
+body[lang="ar"] .trades-table thead th,
+body[lang="ar"] .trades-table tbody td,
+html[lang="ar"] .trades-table thead th,
+html[lang="ar"] .trades-table tbody td {
+    text-align: right;
 }
 
 /* Base Styles */
@@ -49,7 +120,7 @@
 .tr-card-pair {
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--tr-primary);
+    color: #0f172a;
 }
 
 .tr-card-action {
@@ -57,7 +128,23 @@
     font-weight: 600;
     padding: 4px 12px;
     background: #eff6ff;
-    color: var(--tr-accent);
+    color: #1e40af;
+    border-radius: 20px;
+}
+
+.tr-card-current,
+.tr-current-price {
+    font-size: 0.95rem;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.tr-action-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    background: #eff6ff;
+    color: #1e40af;
     border-radius: 20px;
 }
 
@@ -66,14 +153,17 @@
     padding: 12px 16px;
     border-radius: 8px;
     margin-bottom: 16px;
-    color: var(--tr-success);
-    font-weight: 500;
+    color: #166534;
+    font-weight: 600;
     display: flex;
     justify-content: space-between;
+    font-size: 0.95rem;
 }
 
 .tr-entry-val {
     font-weight: 700;
+    color: #0f172a;
+    font-size: 1rem;
 }
 
 .tr-row {
@@ -92,15 +182,17 @@
 
 .tr-col small {
     display: block;
-    color: var(--tr-secondary);
-    font-size: 0.8rem;
-    margin-bottom: 4px;
+    color: #1e293b;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    font-weight: 500;
 }
 
 .tr-col strong {
     display: block;
-    font-size: 1rem;
-    color: var(--tr-primary);
+    font-size: 1.1rem;
+    color: #0f172a;
+    font-weight: 700;
 }
 
 .tr-footer {

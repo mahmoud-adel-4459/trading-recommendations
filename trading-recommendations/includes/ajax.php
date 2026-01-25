@@ -21,6 +21,8 @@ function tr_ajax_mark_closed() {
     $close_time = isset( $_POST['close_time'] ) ? sanitize_text_field( wp_unslash( $_POST['close_time'] ) ) : '';
     $result = isset( $_POST['result'] ) ? sanitize_text_field( wp_unslash( $_POST['result'] ) ) : '';
     $close_price = isset( $_POST['close_price'] ) ? sanitize_text_field( wp_unslash( $_POST['close_price'] ) ) : '';
+    $tp_value = isset( $_POST['tp_value'] ) ? sanitize_text_field( wp_unslash( $_POST['tp_value'] ) ) : '';
+    $sl_value = isset( $_POST['sl_value'] ) ? sanitize_text_field( wp_unslash( $_POST['sl_value'] ) ) : '';
 
     // update meta
     update_post_meta( $post_id, 'status', 'Closed' );
@@ -33,6 +35,12 @@ function tr_ajax_mark_closed() {
     }
     if ( $result ) {
         update_post_meta( $post_id, 'result', $result );
+    }
+    if ( $tp_value !== '' ) {
+        update_post_meta( $post_id, 'tp_value', $tp_value );
+    }
+    if ( $sl_value !== '' ) {
+        update_post_meta( $post_id, 'sl_value', $sl_value );
     }
 
     wp_send_json_success( array( 'post_id' => $post_id ) );
@@ -101,6 +109,9 @@ function tr_ajax_import_sample() {
         $pid1 = wp_insert_post( $active_post );
         if ( $pid1 && ! is_wp_error( $pid1 ) ) {
             $inserted++;
+            
+            // Create Arabic translation if WPML is active
+            tr_create_wpml_translation( $pid1, 'post_trade_recommendation', sprintf( __( 'عينة إشارة نشطة %d', 'trading-recommendations' ), $i ) );
         }
 
         // Closed sample
@@ -151,6 +162,9 @@ function tr_ajax_import_sample() {
         $pid2 = wp_insert_post( $closed_post );
         if ( $pid2 && ! is_wp_error( $pid2 ) ) {
             $inserted++;
+            
+            // Create Arabic translation if WPML is active
+            tr_create_wpml_translation( $pid2, 'post_trade_recommendation', sprintf( __( 'عينة إشارة مغلقة %d', 'trading-recommendations' ), $i ) );
         }
     }
 
@@ -191,3 +205,92 @@ function tr_ajax_delete_samples() {
     wp_send_json_success( array( 'deleted' => $deleted ) );
 }
 add_action( 'wp_ajax_tr_delete_samples', 'tr_ajax_delete_samples' );
+
+/**
+ * Helper function to create WPML translation for a post
+ */
+function tr_create_wpml_translation( $post_id, $post_type, $translated_title ) {
+    if ( ! function_exists( 'icl_object_id' ) && ! class_exists( 'SitePress' ) ) {
+        return;
+    }
+    
+    global $sitepress;
+    if ( ! $sitepress ) {
+        return;
+    }
+    
+    $default_lang = $sitepress->get_default_language();
+    $active_languages = $sitepress->get_active_languages();
+    
+    // Find Arabic language code
+    $ar_lang_code = null;
+    foreach ( $active_languages as $lang_code => $lang_data ) {
+        if ( strpos( strtolower( $lang_code ), 'ar' ) !== false || 
+             strpos( strtolower( $lang_data['code'] ), 'ar' ) !== false ||
+             ( isset( $lang_data['default_locale'] ) && strpos( $lang_data['default_locale'], 'ar' ) !== false ) ) {
+            $ar_lang_code = $lang_code;
+            break;
+        }
+    }
+    
+    if ( ! $ar_lang_code || $ar_lang_code === $default_lang ) {
+        return; // Arabic is default or not found
+    }
+    
+    // Get translation group ID
+    $trid = $sitepress->get_element_trid( $post_id, 'post_' . $post_type );
+    
+    // Check if translation already exists
+    $translations = $sitepress->get_element_translations( $trid, 'post_' . $post_type );
+    if ( isset( $translations[ $ar_lang_code ] ) ) {
+        return; // Translation already exists
+    }
+    
+    // Get original post
+    $original_post = get_post( $post_id );
+    if ( ! $original_post ) {
+        return;
+    }
+    
+    // Create translation
+    $translated_post = array(
+        'post_title'   => $translated_title,
+        'post_content' => $original_post->post_content,
+        'post_status'  => $original_post->post_status,
+        'post_type'    => $post_type,
+    );
+    
+    $translated_post_id = wp_insert_post( $translated_post );
+    
+    if ( ! is_wp_error( $translated_post_id ) && $translated_post_id ) {
+        // Copy meta fields
+        $meta_keys = array( 'pair', 'action', 'entry_price', 'stop_loss', 'take_profit', 'current_price', 'status', 'close_time', 'close_price', 'result', 'button_link', 'tp_value', 'sl_value', 'is_sample' );
+        foreach ( $meta_keys as $key ) {
+            $value = get_post_meta( $post_id, $key, true );
+            if ( $value !== '' && $value !== null ) {
+                update_post_meta( $translated_post_id, $key, $value );
+            }
+        }
+        
+        // Copy taxonomy terms
+        $terms = wp_get_object_terms( $post_id, 'trade_category' );
+        if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+            $term_ids = array();
+            foreach ( $terms as $term ) {
+                // Get translated term ID
+                $translated_term_id = icl_object_id( $term->term_id, 'trade_category', false, $ar_lang_code );
+                if ( $translated_term_id ) {
+                    $term_ids[] = $translated_term_id;
+                } else {
+                    $term_ids[] = $term->term_id; // Fallback to original
+                }
+            }
+            if ( ! empty( $term_ids ) ) {
+                wp_set_object_terms( $translated_post_id, $term_ids, 'trade_category' );
+            }
+        }
+        
+        // Set language and link translations
+        $sitepress->set_element_language_details( $translated_post_id, 'post_' . $post_type, $trid, $ar_lang_code );
+    }
+}

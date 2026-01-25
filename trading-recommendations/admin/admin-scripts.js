@@ -2,6 +2,12 @@ jQuery(document).ready(function($){
     var modal = $('#tr-close-modal');
     $('#tr-mark-closed').on('click', function(e){
         e.preventDefault();
+        // Clear previous values
+        $('#tr_close_time').val('');
+        $('#tr_close_price').val('');
+        $('#tr_result').val('TP');
+        $('#tr_tp_value').val('');
+        $('#tr_sl_value').val('');
         modal.show();
     });
     $('#tr_close_cancel').on('click', function(){
@@ -13,13 +19,17 @@ jQuery(document).ready(function($){
         var close_time = $('#tr_close_time').val();
         var result = $('#tr_result').val();
         var close_price = $('#tr_close_price').val();
+        var tp_value = $('#tr_tp_value').val();
+        var sl_value = $('#tr_sl_value').val();
         $.post(tr_recommend.ajax_url, {
             action: 'tr_mark_closed',
             nonce: tr_recommend.nonce,
             post_id: post_id,
             close_time: close_time,
             result: result,
-            close_price: close_price
+            close_price: close_price,
+            tp_value: tp_value,
+            sl_value: sl_value
         }, function(res){
             if(res.success){
                 // update UI without reload: change status select and hide modal
